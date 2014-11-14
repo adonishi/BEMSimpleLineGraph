@@ -115,9 +115,9 @@
 - (NSArray *)graphValuesForXAxis;
 
 
-/** All the data points on the graph.
- @return An array of NSNumbers, one for each data point. The array is sorted from the left side of the graph to the right side. */
-- (NSArray *)graphValuesForDataPoints;
+///** All the data points on the graph.
+// @return An array of NSNumbers, one for each data point. The array is sorted from the left side of the graph to the right side. */
+//- (NSArray *)graphValuesForDataPoints;
 
 
 /** All the labels of the X-Axis.
@@ -289,17 +289,35 @@
 //----- DATA POINTS -----//
 
 
+/** The optional number of lines in the graph.
+  if this method is not defined, only one line will be drawn.
+ @param graph The graph object requesting the total number of lines.
+ @return The total number of lines in the graph. */
+- (NSInteger)numberOfLinesInLineGraph:(BEMSimpleLineGraphView *)graph;
+
 /** The number of points along the X-axis of the graph.
  @param graph The graph object requesting the total number of points.
  @return The total number of points in the line graph. */
 - (NSInteger)numberOfPointsInLineGraph:(BEMSimpleLineGraphView *)graph;
 
+/** The number of points along the X-axis of the graph.
+ @param graph The graph object requesting the total number of points.
+ @param index The index of line requesting the total number of points.
+ @return The total number of points in the line graph. */
+- (NSInteger)numberOfPointsForLine:(NSInteger)index lineGraph:(BEMSimpleLineGraphView *)graph;
 
 /** The vertical position for a point at the given index. It corresponds to the Y-axis value of the Graph.
  @param graph The graph object requesting the point value.
  @param index The index from left to right of a given point (X-axis). The first value for the index is 0.
  @return The Y-axis value at a given index. */
 - (CGFloat)lineGraph:(BEMSimpleLineGraphView *)graph valueForPointAtIndex:(NSInteger)index;
+
+/** The vertical position for a point at the given index. It corresponds to the Y-axis value of the Graph.
+ @param graph The graph object requesting the point value.
+ @param index The index from left to right of a given point (X-axis). The first value for the index is 0.
+ @param lineIndex The index of line requesting the point value.
+ @return The Y-axis value at a given index. */
+- (CGFloat)lineGraph:(BEMSimpleLineGraphView *)graph valueForPointAtIndex:(NSInteger)index line:(NSInteger)lineIndex;
 
 
 @optional
@@ -347,12 +365,26 @@
  @return The suffix to append to the popup report. */
 - (NSString *)popUpSuffixForlineGraph:(BEMSimpleLineGraphView *)graph;
 
+/** The optional suffix to append to the popup report.
+ @param graph The graph object requesting the total number of points.
+ @param line The BMLine object requesting the total number of points.
+ @return The suffix to append to the popup report. */
+// - (NSString *)popUpSuffixForLine:(BEMLine *)line lineGraph:(BEMSimpleLineGraphView *)graph;
+
 /** Optional method to always display some of the pop up labels on the graph.
  @see alwaysDisplayPopUpLabels must be set to YES for this method to have any affect.
  @param graph The graph object requesting the total number of points.
  @param index The index from left to right of the points on the graph. The first value for the index is 0.
  @return Return YES if you want the popup label to be displayed for this index. */
 - (BOOL)lineGraph:(BEMSimpleLineGraphView *)graph alwaysDisplayPopUpAtIndex:(CGFloat)index;
+
+/** Optional method to always display some of the pop up labels on the graph.
+ @see alwaysDisplayPopUpLabels must be set to YES for this method to have any affect.
+ @param graph The graph object requesting the total number of points.
+ @param index The index from left to right of the points on the graph. The first value for the index is 0.
+ @param line The BMLine object requesting the total number of points.
+ @return Return YES if you want the popup label to be displayed for this index. */
+- (BOOL)lineGraph:(BEMSimpleLineGraphView *)graph alwaysDisplayPopUpAtIndex:(CGFloat)index line:(BEMLine *)line;
 
 /** Optional method to set the maximum value of the Y-Axis. If not implemented, the maximum value will be the biggest point of the graph.
  @param graph The graph object requesting the maximum value.
@@ -378,6 +410,11 @@
  @param graph The graph object requesting the padding value.
  @return The padding value of the graph. */
 - (CGFloat)staticPaddingForLineGraph:(BEMSimpleLineGraphView *)graph;
+
+/** The additional line setting. good place to change color etc in multi line.
+ @param graph The graph object requesting the total number of points.
+ @param line The BMLine object requesting the total number of points. */
+- (void)additionalSetupForLine:(BEMLine *)line lineGraph:(BEMSimpleLineGraphView *)graph;
 
 
 //----- TOUCH EVENTS -----//

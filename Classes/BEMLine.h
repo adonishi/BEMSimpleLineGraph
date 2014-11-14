@@ -36,6 +36,17 @@ typedef NS_ENUM(NSInteger, BEMLineAnimation) {
 
 
 
+//----- REFERENCE -----//
+
+/// An arbitrary line description. This can be used to identify the line or display a graph key
+// @property (strong, nonatomic) NSString *descriptor;
+
+
+/** An integer pointing to the line's index value.
+   @discussion An integer which represents the line's index value. This is a zero-indexed value (the first line will have an index of 0, the second an index of 1, etc.). The line at the zero index will determine the reference lines and the bottom / top sections. All subsequent lines are drawn according to the calculations made for the first line. */
+@property (assign, nonatomic) NSInteger index;
+
+
 //----- POINTS -----//
 
 /// The previous point. Necessary for Bezier curve
