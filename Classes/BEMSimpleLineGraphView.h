@@ -115,11 +115,6 @@
 - (NSArray *)graphValuesForXAxis;
 
 
-///** All the data points on the graph.
-// @return An array of NSNumbers, one for each data point. The array is sorted from the left side of the graph to the right side. */
-//- (NSArray *)graphValuesForDataPoints;
-
-
 /** All the labels of the X-Axis.
  @return An array of UILabels, one for each displayed X-Axis label. The array is sorted from the left side of the graph to the right side. */
 - (NSArray *)graphLabelsForXAxis;
@@ -384,7 +379,7 @@
  @param index The index from left to right of the points on the graph. The first value for the index is 0.
  @param line The BMLine object requesting the total number of points.
  @return Return YES if you want the popup label to be displayed for this index. */
-- (BOOL)lineGraph:(BEMSimpleLineGraphView *)graph alwaysDisplayPopUpAtIndex:(CGFloat)index line:(BEMLine *)line;
+//- (BOOL)lineGraph:(BEMSimpleLineGraphView *)graph alwaysDisplayPopUpAtIndex:(CGFloat)index line:(BEMLine *)line;
 
 /** Optional method to set the maximum value of the Y-Axis. If not implemented, the maximum value will be the biggest point of the graph.
  @param graph The graph object requesting the maximum value.

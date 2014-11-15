@@ -949,10 +949,6 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     return xAxisValues;
 }
 
-//- (NSArray *)graphValuesForDataPoints {
-//    return dataPoints;
-//}
-
 - (NSArray *)graphLabelsForXAxis {
     return xAxisLabels;
 }
