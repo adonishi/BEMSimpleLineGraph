@@ -30,7 +30,7 @@
     referenceLinesPath.lineCapStyle = kCGLineCapButt;
     referenceLinesPath.lineWidth = 0.7;
     
-    if (self.enableRefrenceLines == YES) {
+    if (self.index == 0 && self.enableRefrenceLines == YES) {
         for (NSNumber *xNumber in self.arrayOfVerticalRefrenceLinePoints) {
             CGPoint initialPoint = CGPointMake([xNumber floatValue], self.frame.size.height - self.frameOffset);
             CGPoint finalPoint = CGPointMake([xNumber floatValue], 0);
@@ -178,28 +178,30 @@
     // ---------------------------//
     // ---- Draw Fill Colors -----//
     // ---------------------------//
-    [self.topColor set];
-    [fillTop fillWithBlendMode:kCGBlendModeNormal alpha:self.topAlpha];
+//    if (self.index == 0) {
+        [self.topColor set];
+        [fillTop fillWithBlendMode:kCGBlendModeNormal alpha:self.topAlpha];
 
-    [self.bottomColor set];
-    [fillBottom fillWithBlendMode:kCGBlendModeNormal alpha:self.bottomAlpha];
+        [self.bottomColor set];
+        [fillBottom fillWithBlendMode:kCGBlendModeNormal alpha:self.bottomAlpha];
 
-    CGContextRef ctx = UIGraphicsGetCurrentContext();
-    if (self.topGradient != nil) {
-        CGContextSaveGState(ctx);
-        CGContextAddPath(ctx, [fillTop CGPath]);
-        CGContextClip(ctx);
-        CGContextDrawLinearGradient(ctx, self.topGradient, CGPointZero, CGPointMake(0, CGRectGetMaxY(fillTop.bounds)), 0);
-        CGContextRestoreGState(ctx);
-    }
+        CGContextRef ctx = UIGraphicsGetCurrentContext();
+        if (self.topGradient != nil) {
+            CGContextSaveGState(ctx);
+            CGContextAddPath(ctx, [fillTop CGPath]);
+            CGContextClip(ctx);
+            CGContextDrawLinearGradient(ctx, self.topGradient, CGPointZero, CGPointMake(0, CGRectGetMaxY(fillTop.bounds)), 0);
+            CGContextRestoreGState(ctx);
+        }
 
-    if (self.bottomGradient != nil) {
-        CGContextSaveGState(ctx);
-        CGContextAddPath(ctx, [fillBottom CGPath]);
-        CGContextClip(ctx);
-        CGContextDrawLinearGradient(ctx, self.bottomGradient, CGPointZero, CGPointMake(0, CGRectGetMaxY(fillBottom.bounds)), 0);
-        CGContextRestoreGState(ctx);
-    }
+        if (self.bottomGradient != nil) {
+            CGContextSaveGState(ctx);
+            CGContextAddPath(ctx, [fillBottom CGPath]);
+            CGContextClip(ctx);
+            CGContextDrawLinearGradient(ctx, self.bottomGradient, CGPointZero, CGPointMake(0, CGRectGetMaxY(fillBottom.bounds)), 0);
+            CGContextRestoreGState(ctx);
+        }
+//    }
     
     
     // ---------------------------//

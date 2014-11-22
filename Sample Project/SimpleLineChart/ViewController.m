@@ -26,6 +26,7 @@
 	// Do any additional setup after loading the view, typically from a nib.
     
     self.arrayOfValues = [[NSMutableArray alloc] init];
+    self.arrayOfValues2 = [[NSMutableArray alloc] init];
     self.arrayOfDates = [[NSMutableArray alloc] init];
     
     previousStepperValue = self.graphObjectIncrement.value;
@@ -33,6 +34,7 @@
     
     for (int i = 0; i < 9; i++) {
         [self.arrayOfValues addObject:@([self getRandomInteger])]; // Random values for the graph
+        [self.arrayOfValues2 addObject:@([self getRandomInteger])]; // Random values for the graph
         [self.arrayOfDates addObject:[NSString stringWithFormat:@"%@", @(2000 + i)]]; // Dates for the X-Axis of the graph
         
         totalNumber = totalNumber + [[self.arrayOfValues objectAtIndex:i] intValue]; // All of the values added together
@@ -82,7 +84,7 @@
     self.curveChoice.selectedSegmentIndex = self.myGraph.enableBezierCurve;
 
     // The labels to report the values of the graph when the user touches it
-    self.labelValues.text = [NSString stringWithFormat:@"%i", [[self.myGraph calculatePointValueSum] intValue]];
+//    self.labelValues.text = [NSString stringWithFormat:@"%i", [[self.myGraph calculatePointValueSum] intValue]];
     self.labelDates.text = @"between 2000 and 2010";
 }
 
@@ -99,6 +101,7 @@
     
     for (int i = 0; i < self.graphObjectIncrement.value; i++) {
         [self.arrayOfValues addObject:@([self getRandomInteger])]; // Random values for the graph
+        [self.arrayOfValues2 addObject:@([self getRandomInteger])]; // Random values for the graph
         [self.arrayOfDates addObject:[NSString stringWithFormat:@"%@", @(2000 + i)]]; // Dates for the X-Axis of the graph
         
         totalNumber = totalNumber + [(self.arrayOfValues)[i] intValue]; // All of the values added together
@@ -163,11 +166,18 @@
 
 #pragma mark - SimpleLineGraph Data Source
 
-- (NSInteger)numberOfPointsInLineGraph:(BEMSimpleLineGraphView *)graph {
+- (NSInteger)numberOfLinesInLineGraph:(BEMSimpleLineGraphView *)graph {
+    return 2;
+}
+
+- (NSInteger)numberOfPointsForLine:(NSInteger)line lineGraph:(BEMSimpleLineGraphView *)graph {
     return (int)[self.arrayOfValues count];
 }
 
-- (CGFloat)lineGraph:(BEMSimpleLineGraphView *)graph valueForPointAtIndex:(NSInteger)index {
+- (CGFloat)lineGraph:(BEMSimpleLineGraphView *)graph valueForPointAtIndex:(NSInteger)index line:(NSInteger)lineIndex {
+    if (lineIndex == 1) {
+        return [[self.arrayOfValues2 objectAtIndex:index] floatValue];
+    }
     return [[self.arrayOfValues objectAtIndex:index] floatValue];
 }
 
@@ -205,6 +215,14 @@
 - (void)lineGraphDidFinishLoading:(BEMSimpleLineGraphView *)graph {
     self.labelValues.text = [NSString stringWithFormat:@"%i", [[self.myGraph calculatePointValueSum] intValue]];
     self.labelDates.text = [NSString stringWithFormat:@"between %@ and %@", [self.arrayOfDates firstObject], [self.arrayOfDates lastObject]];
+}
+
+- (void)additionalSetupForLine:(BEMLine *)line lineGraph:(BEMSimpleLineGraphView *)graph {
+    if (line.index == 1) {
+        line.color = [UIColor yellowColor];
+        line.topColor = [UIColor clearColor];
+        line.bottomAlpha = 0.2;
+    }
 }
 
 @end

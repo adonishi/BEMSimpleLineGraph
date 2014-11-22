@@ -15,6 +15,7 @@
 @property (weak, nonatomic) IBOutlet BEMSimpleLineGraphView *myGraph;
 
 @property (strong, nonatomic) NSMutableArray *arrayOfValues;
+@property (strong, nonatomic) NSMutableArray *arrayOfValues2;
 @property (strong, nonatomic) NSMutableArray *arrayOfDates;
 
 @property (strong, nonatomic) IBOutlet UILabel *labelValues;
