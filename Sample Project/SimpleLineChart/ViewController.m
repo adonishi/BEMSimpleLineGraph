@@ -193,7 +193,14 @@
 }
 
 - (void)lineGraph:(BEMSimpleLineGraphView *)graph didTouchGraphWithClosestIndex:(NSInteger)index {
-    self.labelValues.text = [NSString stringWithFormat:@"%@", [self.arrayOfValues objectAtIndex:index]];
+    NSString *values = @"";
+    for (BEMLine *line in graph.graphLines) {
+        if (values.length > 0) {
+            values = [values stringByAppendingString:@", "];
+        }
+        values = [values stringByAppendingString:[NSString stringWithFormat:@"%@", [line.arrayOfValues objectAtIndex:index]]];
+    }
+    self.labelValues.text = values;
     self.labelDates.text = [NSString stringWithFormat:@"in %@", [self.arrayOfDates objectAtIndex:index]];
 }
 

@@ -30,6 +30,9 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 @interface BEMSimpleLineGraphView () {
     /// The number of Lines in the Graph
     NSInteger numberOflines;
+    
+    /// NSArray of Lines
+    NSMutableArray *linesArray;
 
     /// The number of Points in the Graph
     NSInteger numberOfPoints;
@@ -164,6 +167,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     _alwaysDisplayPopUpLabels = NO;
     
     // Initialize the various arrays
+    linesArray = [NSMutableArray array];
     xAxisValues = [NSMutableArray array];
     xAxisLabelPoints = [NSMutableArray array];
     yAxisLabelPoints = [NSMutableArray array];
@@ -442,6 +446,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         if ([subview isKindOfClass:[BEMLine class]])
             [subview removeFromSuperview];
     }
+    [linesArray removeAllObjects];
 
     for (long index = numberOflines - 1; index >= 0; index--) {
         BEMLine *line = [[BEMLine alloc] initWithFrame:CGRectMake(self.YAxisLabelXOffset, 0, self.frame.size.width - self.YAxisLabelXOffset, self.frame.size.height)];
@@ -489,6 +494,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 
         [self addSubview:line];
         [self sendSubviewToBack:line];
+        [linesArray addObject:line];
     }
 }
 
@@ -958,6 +964,10 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 
 - (NSArray *)graphLabelsForXAxis {
     return xAxisLabels;
+}
+
+- (NSArray *)graphLines {
+    return linesArray;
 }
 
 - (void)setAnimationGraphStyle:(BEMLineAnimation)animationGraphStyle

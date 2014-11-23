@@ -120,6 +120,11 @@ IB_DESIGNABLE @interface BEMSimpleLineGraphView : UIView <UIGestureRecognizerDel
 - (NSArray *)graphLabelsForXAxis;
 
 
+/** All the lines on the graph.
+ @return An array of BEMLines, one for each line. The array is sorted from the bottom from top line. */
+- (NSArray *)graphLines;
+
+
 
 //------------------------------------------------------------------------------------//
 //----- PROPERTIES -------------------------------------------------------------------//
