@@ -27,6 +27,65 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     PermanentPopUpViewTag3100 = 3100,
 };
 
+#pragma mark - BEMSimpleLineGraphColorLabelView
+
+@interface BEMSimpleLineGraphColorLabelView : UIView
+    // LableView which contains UILabel and UIView to show color of Line
+    @property (strong, nonatomic) UIView *colorView;
+    @property (strong, nonatomic) UILabel *label;
+@end
+
+@implementation BEMSimpleLineGraphColorLabelView
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.backgroundColor = [UIColor clearColor];
+
+        CGRect rect = CGRectMake(1, 1, 1, 1);   // actual frame will be determined by sizeToFit.
+        self.colorView = [[UIView alloc] initWithFrame:rect];
+        [self addSubview:self.colorView];
+
+        self.label = [[UILabel alloc] initWithFrame:rect];
+        self.label.textAlignment = 1;
+        self.label.numberOfLines = 1;
+        self.label.backgroundColor = [UIColor clearColor];
+        self.label.alpha = 1;
+        [self addSubview:self.label];
+    }
+    return self;
+}
+
+- (void)setLineColor:(UIColor*)color {
+    [self.colorView setBackgroundColor:color];
+}
+
+- (void)setLabelText:(NSString*)text {
+    self.label.text = text;
+}
+
+- (void)setFont:(UIFont*)font {
+    self.label.font = font;
+}
+
+- (void)setTextColor:(UIColor*)color {
+    self.label.textColor = color;
+}
+
+- (void)sizeToFit {
+    [self.label sizeToFit];
+
+    CGFloat labelHeight = self.label.frame.size.height;
+    CGFloat width = 2 + labelHeight + 5 + self.label.frame.size.width + 2;
+    self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, width, 2 + labelHeight + 2);
+    self.colorView.frame = CGRectMake(2, 2, labelHeight, labelHeight);
+    self.label.frame = CGRectMake(2 + labelHeight + 5, 2, self.label.frame.size.width, self.label.frame.size.height);
+}
+@end
+
+
+#pragma mark - BEMSimpleLineGraphView
+
 @interface BEMSimpleLineGraphView () {
     /// The number of Lines in the Graph
     NSInteger numberOflines;
@@ -74,8 +133,8 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 /// The gesture recognizer picking up the pan in the graph view
 @property (strong, nonatomic) UIPanGestureRecognizer *panGesture;
 
-/// The label displayed when enablePopUpReport is set to YES
-@property (strong, nonatomic) UILabel *popUpLabel;
+/// NSArray of labels displayed when enablePopUpReport is set to YES
+@property (strong, nonatomic) NSMutableArray *popUpLabels;
 
 /// The view used for the background of the popup label
 @property (strong, nonatomic) UIView *popUpView;
@@ -138,7 +197,8 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     _colorBottom = [UIColor colorWithRed:0 green:122.0/255.0 blue:255/255 alpha:1];
     _colorPoint = [UIColor whiteColor];
     _colorTouchInputLine = [UIColor grayColor];
-    _colorBackgroundPopUplabel = [UIColor whiteColor];
+    _colorBackgroundPopUplabel = [UIColor colorWithWhite:0.95 alpha:1.0];   // very light gray
+    _colorTextPopUplabel = [UIColor blackColor];
     _alphaTouchInputLine = 0.2;
     _widthTouchInputLine = 1.0;
     _colorBackgroundXaxis = nil;
@@ -174,6 +234,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     linesDataPoints = [NSMutableArray array];
     xAxisLabels = [NSMutableArray array];
     linesYAxisValues = [NSMutableArray array];
+    self.popUpLabels = [NSMutableArray array];
 }
 
 - (void)layoutSubviews {
@@ -308,23 +369,60 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
                 longestString = minValueString;
             else longestString = maxValueString;
 
-            self.popUpLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 20)];
-            if ([self.delegate respondsToSelector:@selector(popUpSuffixForlineGraph:)])
-                self.popUpLabel.text = [NSString stringWithFormat:@"%@%@", longestString, [self.delegate popUpSuffixForlineGraph:self]];
-            else self.popUpLabel.text = longestString;
-            self.popUpLabel.textAlignment = 1;
-            self.popUpLabel.numberOfLines = 1;
-            self.popUpLabel.font = self.labelFont;
-            self.popUpLabel.backgroundColor = [UIColor clearColor];
-            [self.popUpLabel sizeToFit];
-            self.popUpLabel.alpha = 0;
-            
-            self.popUpView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.popUpLabel.frame.size.width + 7, self.popUpLabel.frame.size.height + 2)];
+            // remove all labels.
+            for (BEMSimpleLineGraphColorLabelView* view in self.popUpLabels) {
+                [view removeFromSuperview];
+            }
+            [self.popUpLabels removeAllObjects];
+
+            // create label for each lines.
+            int yPos = 0;
+            int maxWidth = 0;
+            if (numberOflines == 1) {
+                UILabel *popUpLabel = [[UILabel alloc] initWithFrame:CGRectMake(3, 3, 100, 20)];
+                if ([self.delegate respondsToSelector:@selector(popUpSuffixForlineGraph:)])
+                        popUpLabel.text = [NSString stringWithFormat:@"%@%@", longestString, [self.delegate popUpSuffixForlineGraph:self]];
+                else popUpLabel.text = longestString;
+                popUpLabel.textAlignment = NSTextAlignmentCenter;
+                popUpLabel.numberOfLines = 1;
+                popUpLabel.font = self.labelFont;
+                popUpLabel.backgroundColor = [UIColor clearColor];
+                [popUpLabel sizeToFit];
+                popUpLabel.alpha = 0;
+
+                yPos = 3 + popUpLabel.frame.size.height;
+                maxWidth = popUpLabel.frame.size.width;
+                [self.popUpLabels addObject:popUpLabel];
+            } else {
+                for (int i = 0; i < numberOflines; i++) {
+                    CGRect rect = CGRectMake(3, 3 + yPos, 100, 20);
+                    BEMSimpleLineGraphColorLabelView *popUpLabel = [[BEMSimpleLineGraphColorLabelView alloc] initWithFrame:rect];
+                    if ([self.delegate respondsToSelector:@selector(popUpSuffixForlineGraph:)])
+                        [popUpLabel setLabelText: [NSString stringWithFormat:@"%@%@", longestString, [self.delegate popUpSuffixForlineGraph:self]]];
+                    else [popUpLabel setLabelText: longestString];
+                    [popUpLabel setFont: self.labelFont];
+                    [popUpLabel setTextColor: self.colorTextPopUplabel];
+                    [popUpLabel sizeToFit];
+
+                    yPos += 3 + popUpLabel.frame.size.height;
+                    maxWidth = MAX(maxWidth, popUpLabel.frame.size.width);
+                    [self.popUpLabels addObject:popUpLabel];
+                }
+            }
+
+            // remove & create popUpView
+            if (self.popUpView) {
+                [self.popUpView removeFromSuperview];
+            }
+            self.popUpView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, maxWidth + 7 + 3, yPos + 2 + 3)];
             self.popUpView.backgroundColor = self.colorBackgroundPopUplabel;
             self.popUpView.alpha = 0;
             self.popUpView.layer.cornerRadius = 3;
             [self addSubview:self.popUpView];
-            [self addSubview:self.popUpLabel];
+            
+            for (UILabel *popUpLabel in self.popUpLabels) {
+                [self.popUpView addSubview:popUpLabel];
+            }
         }
     }
 }
@@ -611,7 +709,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
                 UILabel *labelXAxis = [[UILabel alloc] init];
                 labelXAxis.text = xAxisLabelText;
                 labelXAxis.font = self.labelFont;
-                labelXAxis.textAlignment = 1;
+                labelXAxis.textAlignment = NSTextAlignmentCenter;
                 labelXAxis.textColor = self.colorXaxisLabel;
                 labelXAxis.backgroundColor = [UIColor clearColor];
                 [xAxisLabels addObject:labelXAxis];
@@ -1042,7 +1140,6 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
             self.touchInputLine.alpha = 0;
             if (self.enablePopUpReport == YES) {
                 self.popUpView.alpha = 0;
-                self.popUpLabel.alpha = 0;
             }
         } completion:nil];
     }
@@ -1055,36 +1152,58 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 - (void)setUpPopUpLabelAbovePoint:(BEMCircle *)closestPoint {
     [UIView animateWithDuration:0.2 delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         self.popUpView.alpha = 0.7;
-        self.popUpLabel.alpha = 1;
     } completion:nil];
     
-    self.xCenterLabel = closestDot.center.x;
-    self.yCenterLabel = closestDot.center.y - closestDot.frame.size.height/2 - 15;
-    self.popUpView.center = CGPointMake(self.xCenterLabel, self.yCenterLabel);
-    self.popUpLabel.center = self.popUpView.center;
-    
-    if (numberOflines == 1) {   // TODO: popup support for multiline
+    NSInteger dataIndex = (NSInteger) closestDot.tag - DotFirstTag100;
+    if (numberOflines == 1) {
+        UILabel *popUpLabel = self.popUpLabels[0];
         NSMutableArray *dataPoints = linesDataPoints[0];
+        long dataValue = (long)[dataPoints[dataIndex] integerValue];
         if ([self.delegate respondsToSelector:@selector(popUpSuffixForlineGraph:)])
-            self.popUpLabel.text = [NSString stringWithFormat:@"%li%@", (long)[dataPoints[(NSInteger) closestDot.tag - DotFirstTag100] integerValue], [self.delegate popUpSuffixForlineGraph:self]];
+            popUpLabel.text = [NSString stringWithFormat:@"%li%@", dataValue, [self.delegate popUpSuffixForlineGraph:self]];
         else
-            self.popUpLabel.text = [NSString stringWithFormat:@"%li", (long)[dataPoints[(NSInteger) closestDot.tag - DotFirstTag100] integerValue]];
-        if (self.enableYAxisLabel == YES && self.popUpView.frame.origin.x <= self.YAxisLabelXOffset) {
-            self.xCenterLabel = self.popUpView.frame.size.width/2;
-            self.popUpView.center = CGPointMake(self.xCenterLabel + self.YAxisLabelXOffset + 1, self.yCenterLabel);
+            popUpLabel.text = [NSString stringWithFormat:@"%li", dataValue];
+        popUpLabel.alpha = 1;
+
+        self.yCenterLabel = closestDot.center.y - closestDot.frame.size.height/2 - 15;
+    } else {
+        NSInteger yValueSum = 0;
+        for (int i = 0; i < numberOflines; i++) {
+            NSMutableArray *dataPoints = linesDataPoints[i];
+            BEMSimpleLineGraphColorLabelView *popUpLabel = (BEMSimpleLineGraphColorLabelView*)self.popUpLabels[i];
+            long dataValue = (long)[dataPoints[dataIndex] integerValue];
+            if ([self.delegate respondsToSelector:@selector(popUpSuffixForlineGraph:)])
+                [popUpLabel setLabelText: [NSString stringWithFormat:@"%li%@", dataValue, [self.delegate popUpSuffixForlineGraph:self]]];
+            else
+                [popUpLabel setLabelText: [NSString stringWithFormat:@"%li", dataValue]];
+            
+            BEMLine *line = (BEMLine*)linesArray[numberOflines -1 -i];
+            [popUpLabel setLineColor:line.color];
+            popUpLabel.alpha = 1;
+            
+            yValueSum += [self->linesYAxisValues[i][dataIndex] integerValue];
         }
-        else if (self.popUpView.frame.origin.x <= 0) {
-            self.xCenterLabel = self.popUpView.frame.size.width/2;
-            self.popUpView.center = CGPointMake(self.xCenterLabel, self.yCenterLabel);
-        } else if ((self.popUpView.frame.origin.x + self.popUpView.frame.size.width) >= self.frame.size.width) {
-            self.xCenterLabel = self.frame.size.width - self.popUpView.frame.size.width/2;
-            self.popUpView.center = CGPointMake(self.xCenterLabel, self.yCenterLabel);
-        }
-        if (self.popUpView.frame.origin.y <= 2) {
-            self.yCenterLabel = closestDot.center.y + closestDot.frame.size.height/2 + 15;
-            self.popUpView.center = CGPointMake(self.xCenterLabel, closestDot.center.y + closestDot.frame.size.height/2 + 15);
-        }
-        self.popUpLabel.center = self.popUpView.center;
+
+        self.yCenterLabel = yValueSum / numberOflines;
+    }
+    
+    self.xCenterLabel = closestDot.center.x;
+    self.popUpView.center = CGPointMake(self.xCenterLabel, self.yCenterLabel);
+  
+    if (self.enableYAxisLabel == YES && self.popUpView.frame.origin.x <= self.YAxisLabelXOffset) {
+        self.xCenterLabel = self.popUpView.frame.size.width/2;
+        self.popUpView.center = CGPointMake(self.xCenterLabel + self.YAxisLabelXOffset + 1, self.yCenterLabel);
+    }
+    else if (self.popUpView.frame.origin.x <= 0) {
+        self.xCenterLabel = self.popUpView.frame.size.width/2;
+        self.popUpView.center = CGPointMake(self.xCenterLabel, self.yCenterLabel);
+    } else if ((self.popUpView.frame.origin.x + self.popUpView.frame.size.width) >= self.frame.size.width) {
+        self.xCenterLabel = self.frame.size.width - self.popUpView.frame.size.width/2;
+        self.popUpView.center = CGPointMake(self.xCenterLabel, self.yCenterLabel);
+    }
+    if (self.popUpView.frame.origin.y <= 2) {
+        self.yCenterLabel = closestDot.center.y + closestDot.frame.size.height/2 + 15;
+        self.popUpView.center = CGPointMake(self.xCenterLabel, closestDot.center.y + closestDot.frame.size.height/2 + 15);
     }
 }
 
